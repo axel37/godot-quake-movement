@@ -4,7 +4,7 @@ An attempt at replicating quake movement in Godot (WIP / Incomplete)
 Video demonstration :
 https://www.youtube.com/watch?v=ALRW8pSbosE
 
-The movement code is located in [Player.gd](TestQuakeMovement/Player.gd)
+The movement code is located in [Player.gd](Player.gd)
 
 A few notes :
 
