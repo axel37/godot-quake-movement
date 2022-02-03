@@ -15,6 +15,12 @@ export var accel: float = 60 # or max_speed * 10 : Reach max speed in 1 / 10th o
 
 export var gravity: float = 15
 export var jump_impulse: float = 4.8
+
+#slope variable
+export var max_slope = 0.7853982 #degree of max slope in radians. 0.7853982 translates to 45 degree slope.
+								# If you want the player to be able to move up steeper slopes, you need to adjust this value and the max_slides value
+var max_slides = 4 #change this value to 1 if you need slopes steeper than 45 degrees otherwise don't change it!
+
 var terminal_velocity: float = gravity * -5 # When this is reached, we stop increasing falling speed
 
 var snap: Vector3 # Needed for move_and_slide_wit_snap(), which enables to go down slopes without falling
@@ -125,7 +131,17 @@ func move_ground(input_velocity: Vector3, delta: float)-> void:
 	
 	# Then get back our vertical component, and move the player
 	nextVelocity.y = vertical_velocity
-	velocity = move_and_slide_with_snap(nextVelocity, snap, Vector3.UP)
+	velocity = move_and_slide_with_snap(nextVelocity, snap, Vector3.UP, true, max_slides, max_slope)
+	var slides = get_slide_count()
+	if(slides):
+		slope(slides)
+	
+	#makes sure, the player doesn't lose speed when walking up slopes	
+func slope(slides : int):
+	for i in slides:
+		var touched = get_slide_collision(i)
+		if is_on_floor() && touched.normal.y < 1.0 && (velocity.x != 0.0 || velocity.z != 0.0):
+			velocity.y = touched.normal.y
 
 # Accelerate without applying friction (with a lower allowed max_speed)
 func move_air(input_velocity: Vector3, delta: float)-> void:

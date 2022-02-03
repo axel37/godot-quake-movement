@@ -72,7 +72,7 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0 )
 shape = SubResource( 7 )
 
 [node name="Player" parent="." instance=ExtResource( 1 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 6.68779, 13.7558, 6.90174 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 6.68779, 3.333, 6.90174 )
 
 [node name="HUD" type="Control" parent="."]
 margin_right = 484.0
