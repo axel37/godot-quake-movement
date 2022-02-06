@@ -42,6 +42,17 @@ var auto_jump: bool = false # Auto bunnyhopping
 var debug_horizontal_velocity: Vector3 = Vector3.ZERO
 var accelerate_return: Vector3 = Vector3.ZERO
 
+# variables for camera tiliting while strafing
+const LEAN_LERP = 8
+const RETURN_LEAN_LERP = 11
+
+export var rotation_angle = 2.0
+
+var camera_base_positon : Vector3
+var camera_lean_pos : Vector3
+
+
+
 func _ready() -> void:
 	# We tell our DebugOverlay to draw those vectors in the game world.
 	DebugOverlay.draw.add_vector(self, "wishdir", 1, 8, Color(0,1,0, 0.5)) # Green, WISHDIR
@@ -64,6 +75,9 @@ func _physics_process(delta: float) -> void:
 	var strafe_input: float = Input.get_action_strength("moveright") - Input.get_action_strength("moveleft")
 	wishdir = Vector3(strafe_input, 0, forward_input).rotated(Vector3.UP, self.global_transform.basis.get_euler().y).normalized() 
 	# wishdir is our normalized horizontal inpur
+	
+	cam_tilt(strafe_input, delta)
+	
 	
 	queue_jump()
 	
@@ -166,3 +180,17 @@ func queue_jump()-> void:
 		wish_jump = true
 	if Input.is_action_just_released("jump"):
 		wish_jump = false
+
+func cam_tilt(strafe_strength, delta):
+	
+	var lean_limit = camera_lean_pos.x
+	
+	if strafe_strength and is_on_floor():
+		
+		camera.rotation_degrees.z = lerp(camera.rotation_degrees.z,rotation_angle * -strafe_strength,LEAN_LERP * delta)
+	
+	if !strafe_strength:
+		if  camera.rotation_degrees.z != 0.0:
+			if !strafe_strength or !is_on_floor():
+				camera.transform.origin = camera.transform.origin.linear_interpolate(camera_base_positon, RETURN_LEAN_LERP * delta)
+				camera.rotation_degrees.z = lerp(camera.rotation_degrees.z,0.0, RETURN_LEAN_LERP * delta)
