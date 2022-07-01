@@ -15,7 +15,7 @@ export var gravity: float = 15
 export var jump_impulse: float = 4.8
 var terminal_velocity: float = gravity * -5 # When this is reached, we stop increasing falling speed
 
-var snap: Vector3 # Needed for move_and_slide_wit_snap(), which enables to go down slopes without falling
+var snap: Vector3 # Needed for move_and_slide_with_snap(), which enables to go down slopes without falling
 
 onready var head: Spatial = $Head
 onready var camera: Camera = $Head/Camera
@@ -29,7 +29,7 @@ var vertical_velocity: float = 0 # Vertical component of our velocity.
 var wish_jump: bool = false # If true, player has queued a jump : the jump key can be held down before hitting the ground to jump.
 var auto_jump: bool = false # Auto bunnyhopping
 
-# The next three variables are used to display corresponding vectors in game world.
+# The next two variables are used to display corresponding vectors in game world.
 # This is probably not the best solution and will be removed in the future.
 var debug_horizontal_velocity: Vector3 = Vector3.ZERO
 var accelerate_return: Vector3 = Vector3.ZERO
@@ -55,7 +55,7 @@ func _physics_process(delta: float) -> void:
 	var forward_input: float = Input.get_action_strength("back") - Input.get_action_strength("forward")
 	var strafe_input: float = Input.get_action_strength("moveright") - Input.get_action_strength("moveleft")
 	wishdir = Vector3(strafe_input, 0, forward_input).rotated(Vector3.UP, self.global_transform.basis.get_euler().y).normalized() 
-	# wishdir is our normalized horizontal inpur
+	# wishdir is our normalized horizontal input
 	
 	queue_jump()
 	
@@ -106,7 +106,8 @@ func friction(input_velocity: Vector3)-> Vector3:
 	# Check that speed isn't 0, this is to avoid divide by zero errors
 	if speed != 0:
 		var drop = speed * friction * delta # Amount of speed to be reduced by friction
-		# (speed - drop) will always be lesser than (speed), so multplying by (speed - drop) and dividing by (speed) will ensure we don't add speed
+		# ((max(speed - drop, 0) / speed) will return a number between 0 and 1, this is our speed multiplier from friction
+		# The max() is there to avoid anything from happening in the case where the user sets friction to a negative value
 		scaled_velocity = input_velocity * max(speed - drop, 0) / speed
 	# Stop altogether if we're going too slow to notice
 	if speed < 0.1:
