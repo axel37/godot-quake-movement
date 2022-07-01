@@ -9,9 +9,7 @@ export var mouse_sensitivity: float = 0.0001
 export var max_speed: float = 6 # Meters per second
 export var max_air_speed: float = 0.6
 export var accel: float = 60 # or max_speed * 10 : Reach max speed in 1 / 10th of a second
-
-# For now, the friction variable is not used, as the calculations are  not the same as quake's
-# export var friction: float = 2 # Higher friction = less slippery. In quake-based games, usually between 1 and 5
+export var friction: float = 2 # Higher friction = less slippery. In quake-based games, usually between 1 and 5
 
 export var gravity: float = 15
 export var jump_impulse: float = 4.8
@@ -101,17 +99,18 @@ func accelerate(wishdir: Vector3, input_velocity: Vector3, accel: float, max_spe
 	return accelerate_return
 
 # Scale down horizontal velocity
-# For now, we're simply substracting 10% from our current velocity. This is not how it works in engines like idTech or Source !
 func friction(input_velocity: Vector3)-> Vector3:
 	var speed: float = input_velocity.length()
 	var scaled_velocity: Vector3
-
-	scaled_velocity = input_velocity * 0.9 # Reduce current velocity by 10%
 	
-	# If the player is moving too slowly, we stop them completely
-	if scaled_velocity.length() < max_speed / 100:
-		scaled_velocity = Vector3.ZERO
-
+	# Check that speed isn't 0, this is to avoid divide by zero errors
+	if speed != 0:
+		var drop = speed * friction * delta # Amount of speed to be reduced by friction
+		# (speed - drop) will always be lesser than (speed), so multplying by (speed - drop) and dividing by (speed) will ensure we don't add speed
+		scaled_velocity = input_velocity * max(speed - drop, 0) / speed
+	# Stop altogether if we're going too slow to notice
+	if speed < 0.1:
+		return scaled_velocity * 0
 	return scaled_velocity
 
 # Apply friction, then accelerate
