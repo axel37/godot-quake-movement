@@ -9,7 +9,6 @@ The movement code is located in [Player.gd](Player.gd)
 A few notes :
 
 - **All features are not implemented, such as going up steps.**
-- Friction is NOT the same as in Quake. For now, it is a simple 10% decrease in velocity for every frame the player is touching the ground.
 
 # Warning
 
