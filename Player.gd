@@ -100,7 +100,7 @@ func accelerate(wishdir: Vector3, input_velocity: Vector3, accel: float, max_spe
 	return accelerate_return
 
 # Scale down horizontal velocity
-func friction(input_velocity: Vector3)-> Vector3:
+func friction(input_velocity: Vector3, delta: float)-> Vector3:
 	var speed: float = input_velocity.length()
 	var scaled_velocity: Vector3
 	
@@ -121,7 +121,7 @@ func move_ground(input_velocity: Vector3, delta: float)-> void:
 	var nextVelocity: Vector3 = Vector3.ZERO
 	nextVelocity.x = input_velocity.x
 	nextVelocity.z = input_velocity.z
-	nextVelocity = friction(nextVelocity) #Scale down velocity
+	nextVelocity = friction(nextVelocity, delta) #Scale down velocity
 	nextVelocity = accelerate(wishdir, nextVelocity, accel, max_speed, delta)
 	
 	# Then get back our vertical component, and move the player
