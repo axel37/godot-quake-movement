@@ -10,6 +10,7 @@ export var max_speed: float = 6 # Meters per second
 export var max_air_speed: float = 0.6
 export var accel: float = 60 # or max_speed * 10 : Reach max speed in 1 / 10th of a second
 export var friction: float = 2 # Higher friction = less slippery. In quake-based games, usually between 1 and 5
+export var max_ramp_angle: float = 45 # Max angle that the player can go upwards at full speed
 
 export var gravity: float = 15
 export var jump_impulse: float = 4.8
@@ -125,7 +126,7 @@ func move_ground(input_velocity: Vector3, delta: float)-> void:
 	
 	# Then get back our vertical component, and move the player
 	nextVelocity.y = vertical_velocity
-	velocity = move_and_slide_with_snap(nextVelocity, snap, Vector3.UP, true, 4, 1.13446)
+	velocity = move_and_slide_with_snap(nextVelocity, snap, Vector3.UP, true, 4, deg2rad(max_ramp_angle))
 
 # Accelerate without applying friction (with a lower allowed max_speed)
 func move_air(input_velocity: Vector3, delta: float)-> void:
