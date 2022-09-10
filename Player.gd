@@ -125,7 +125,7 @@ func move_ground(input_velocity: Vector3, delta: float)-> void:
 	
 	# Then get back our vertical component, and move the player
 	nextVelocity.y = vertical_velocity
-	velocity = move_and_slide_with_snap(nextVelocity, snap, Vector3.UP)
+	velocity = move_and_slide_with_snap(nextVelocity, snap, Vector3.UP, true, 4, 1.13446)
 
 # Accelerate without applying friction (with a lower allowed max_speed)
 func move_air(input_velocity: Vector3, delta: float)-> void:
