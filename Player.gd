@@ -9,15 +9,14 @@ export var mouse_sensitivity: float = 0.0001
 export var max_speed: float = 6 # Meters per second
 export var max_air_speed: float = 0.6
 export var accel: float = 60 # or max_speed * 10 : Reach max speed in 1 / 10th of a second
-
-# For now, the friction variable is not used, as the calculations are  not the same as quake's
-# export var friction: float = 2 # Higher friction = less slippery. In quake-based games, usually between 1 and 5
+export var friction: float = 2 # Higher friction = less slippery. In quake-based games, usually between 1 and 5
+export var max_ramp_angle: float = 45 # Max angle that the player can go upwards at full speed
 
 export var gravity: float = 15
 export var jump_impulse: float = 4.8
 var terminal_velocity: float = gravity * -5 # When this is reached, we stop increasing falling speed
 
-var snap: Vector3 # Needed for move_and_slide_wit_snap(), which enables to go down slopes without falling
+var snap: Vector3 # Needed for move_and_slide_with_snap(), which enables to go down slopes without falling
 
 onready var head: Spatial = $Head
 onready var camera: Camera = $Head/Camera
@@ -31,7 +30,7 @@ var vertical_velocity: float = 0 # Vertical component of our velocity.
 var wish_jump: bool = false # If true, player has queued a jump : the jump key can be held down before hitting the ground to jump.
 var auto_jump: bool = false # Auto bunnyhopping
 
-# The next three variables are used to display corresponding vectors in game world.
+# The next two variables are used to display corresponding vectors in game world.
 # This is probably not the best solution and will be removed in the future.
 var debug_horizontal_velocity: Vector3 = Vector3.ZERO
 var accelerate_return: Vector3 = Vector3.ZERO
@@ -57,7 +56,7 @@ func _physics_process(delta: float) -> void:
 	var forward_input: float = Input.get_action_strength("back") - Input.get_action_strength("forward")
 	var strafe_input: float = Input.get_action_strength("moveright") - Input.get_action_strength("moveleft")
 	wishdir = Vector3(strafe_input, 0, forward_input).rotated(Vector3.UP, self.global_transform.basis.get_euler().y).normalized() 
-	# wishdir is our normalized horizontal inpur
+	# wishdir is our normalized horizontal input
 	
 	queue_jump()
 	
@@ -101,17 +100,19 @@ func accelerate(wishdir: Vector3, input_velocity: Vector3, accel: float, max_spe
 	return accelerate_return
 
 # Scale down horizontal velocity
-# For now, we're simply substracting 10% from our current velocity. This is not how it works in engines like idTech or Source !
-func friction(input_velocity: Vector3)-> Vector3:
+func friction(input_velocity: Vector3, delta: float)-> Vector3:
 	var speed: float = input_velocity.length()
 	var scaled_velocity: Vector3
-
-	scaled_velocity = input_velocity * 0.9 # Reduce current velocity by 10%
 	
-	# If the player is moving too slowly, we stop them completely
-	if scaled_velocity.length() < max_speed / 100:
-		scaled_velocity = Vector3.ZERO
-
+	# Check that speed isn't 0, this is to avoid divide by zero errors
+	if speed != 0:
+		var drop = speed * friction * delta # Amount of speed to be reduced by friction
+		# ((max(speed - drop, 0) / speed) will return a number between 0 and 1, this is our speed multiplier from friction
+		# The max() is there to avoid anything from happening in the case where the user sets friction to a negative value
+		scaled_velocity = input_velocity * max(speed - drop, 0) / speed
+	# Stop altogether if we're going too slow to notice
+	if speed < 0.1:
+		return scaled_velocity * 0
 	return scaled_velocity
 
 # Apply friction, then accelerate
@@ -120,12 +121,12 @@ func move_ground(input_velocity: Vector3, delta: float)-> void:
 	var nextVelocity: Vector3 = Vector3.ZERO
 	nextVelocity.x = input_velocity.x
 	nextVelocity.z = input_velocity.z
-	nextVelocity = friction(nextVelocity) #Scale down velocity
+	nextVelocity = friction(nextVelocity, delta) #Scale down velocity
 	nextVelocity = accelerate(wishdir, nextVelocity, accel, max_speed, delta)
 	
 	# Then get back our vertical component, and move the player
 	nextVelocity.y = vertical_velocity
-	velocity = move_and_slide_with_snap(nextVelocity, snap, Vector3.UP)
+	velocity = move_and_slide_with_snap(nextVelocity, snap, Vector3.UP, true, 4, deg2rad(max_ramp_angle))
 
 # Accelerate without applying friction (with a lower allowed max_speed)
 func move_air(input_velocity: Vector3, delta: float)-> void:
