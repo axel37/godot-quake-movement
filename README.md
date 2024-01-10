@@ -32,3 +32,10 @@ A number of resources on the internet were used to create this. The most importa
 The displaying of vectors was taken directly from :
 
 [Drawing Vectors in 3D (KidsCanCode / Godot Recipes)](https://kidscancode.org/godot_recipes/3d/debug_overlay/)
+
+
+___
+
+While not consulted for the development of this project, I recently stumbled upon this resource which further explains Quake's movement code :
+
+https://github.com/myria666/qMovementDoc/
